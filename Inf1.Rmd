@@ -5,12 +5,9 @@ date: "2023-07-21"
 output: pdf_document
 ---
 
-```{r, echo=FALSE}
-#install.packages('corrplot')
-
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
-
-
 **Abstract** Según la OMS, el cancer de mama es una enfermedad que afectó a aproximadamente 2.3 millones de mujeres en 2020, siendo una de las principales causas de mortalidad en mujeres en todo el mundo. Sin embargo, se indica que una de las principales formas de combate a esta enfermedad está en el diagnostico temprano. Teniendo esto en cuenta, ¿cuales son los parámetros de los signos vitales de una persona más relevantes para poder determinar si está afectada por el cancer de mama?. A continuación se analizarán los datos de 116 pacientes, de las cuales 64 poseen cancer de mama.
 
 # 1 Descripción de los datos
@@ -68,9 +65,9 @@ Ahora tenemos una data normalizada como la siguiente.
 ```{r}
 head(data_normalizada)
 ```
-# 2Análisis de los datos
+# 3 Análisis de los datos
 
-## 2.1 Matriz de covarianza
+## 3.1 Matriz de covarianza
 
 ```{r, echo=FALSE}
 library(ggplot2)
@@ -91,4 +88,30 @@ corrplot(cov_matrix, method = 'number')
 ```
 
 Si nos enfocamos en la clasificación del paciente, podemos observar que existe cierta correlación con sus parámetros de Glucosa, Insulina, Indice de resistencia a la insulina (HOMA) y Resistina, mientras que existe una leve correlación inversa con la edad y el índice de masa corporal.
+
+## 2.2 Cálculo de autovectores
+
+A continuación calcularemos los autovectores de los datos normalizados.
+
+```{r}
+eigen_result = eigen(cov_matrix)
+
+# Los autovectores se encuentran en la matriz "vectors" del resultado
+autovectores = eigen_result$vectors
+
+eigen_result$values
+
+```
+
+
+## 2.3 Selección de componentes principales
+
+Ahora, revisemos cuales son los componentes principales de los datos.
+
+```{r}
+data_normalizada.pca = prcomp(data_normalizada[, 1:9], center=TRUE, scale. = TRUE)
+
+summary(data_normalizada.pca)
+```
+
 
