@@ -1,29 +1,56 @@
 ---
-title: "Análisis de Componentes Principales usando datos de pacientes de Cancer de mama"
+title: Análisis de Componentes Principales usando datos de pacientes de Cáncer de
+  mama
 author: "Alfredo Barra, Felipe Altamirano"
 date: "2023-07-21"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
+bibliography: references.bib
+always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+#Carga de librerias
+library(rmarkdown)
+library(ggplot2)
+library(corrplot)
+library(viridis)
+library(GGally)
+library(plotly)
 ```
-**Abstract** Según la OMS, el cancer de mama es una enfermedad que afectó a aproximadamente 2.3 millones de mujeres en 2020, siendo una de las principales causas de mortalidad en mujeres en todo el mundo. Sin embargo, se indica que una de las principales formas de combate a esta enfermedad está en el diagnostico temprano. Teniendo esto en cuenta, ¿cuales son los parámetros de los signos vitales de una persona más relevantes para poder determinar si está afectada por el cancer de mama?. A continuación se analizarán los datos de 116 pacientes, de las cuales 64 poseen cancer de mama.
+**Abstract** Según la OMS, el cáncer de mama es una enfermedad que afectó a aproximadamente 2.3 millones de mujeres en 2020, siendo una de las principales causas de mortalidad en mujeres en todo el mundo [@noauthor_cancer_nodate]. Sin embargo, se indica que una de las principales formas de combate a esta enfermedad está en el diagnóstico temprano. Teniendo esto en cuenta, ¿cuales son los parámetros de los signos vitales de una persona más relevantes para poder determinar si está afectada por el cáncer de mama?. A continuación se analizarán los datos de 116 pacientes, de las cuales 64 poseen cáncer de mama.
 
 # 1 Descripción de los datos
 
-Los datos que usaremos a continuación corresponden a 116 pacientes mujeres, de los cuales 64 han sido diagnosticados con cancer de mama. Las variables de estos datos corresponden a:
+Los datos que usaremos a continuación corresponden a 116 pacientes mujeres, de los cuales 64 han sido diagnosticados con cáncer de mama. Las variables de estos datos corresponden a:
 
-- Age (years): Edad en años
-- BMI (kg/m2): Índice de Masa Corporal
-- Glucose (mg/dL): Glucosa en sangre
-- Insulin (µU/mL): Insulina
-- HOMA: Índice de resistencia a la insulina
-- Leptin (ng/mL): Leptina
-- Adiponectin (µg/mL): Adiponectina
-- Resistin (ng/mL): Resistina
-- MCP-1(pg/dL): Proteína quimiotáctica de monocitos 1
-- Classification: como etiquetado si el paciente está enfermo (2) o está sano (1)
+- **Age** (years): *Edad en años*
+- **BMI** (kg/m2): *Índice de Masa Corporal*
+El BMI (IMC) es una medida médica ampliamente utilizada, evalúa la relación peso-altura para determinar si una persona tiene un peso saludable. Es un método conveniente para detectar problemas de peso y clasificarlos como bajo, normal, sobrepeso u obesidad [@gonzalez_requiem_2017].
+- **Glucose** (mg/dL): *Glucosa en sangre*
+La concentración de glucosa, un tipo de azúcar, presente en el torrente sanguíneo de una persona se denomina "glucosa en sangre". La glucosa es una fuente de energía esencial para el cuerpo y se deriva principalmente de los alimentos que consumimos, en particular de aquellos con alto contenido de carbohidratos [@galant_glucose_2015].  
+La falta de insulina o la resistencia a su acción es lo que hace que los niveles de glucosa en sangre sean constantemente altos en la diabetes, lo que puede ser perjudicial para el bienestar del organismo.
+- **Insulin** (µU/mL): *Insulina*
+La insulina es una hormona producida por el páncreas en el cuerpo humano, actúa en la regulación del metabolismo de la glucosa y es esencial para mantener niveles adecuados de glucosa en sangre [@quianzon_history_2012].
+Cuando se consumen alimentos el nivel de glucosa (azúcar) en la sangre aumenta. En respuesta, las células beta del páncreas liberan insulina al torrente sanguíneo. La insulina permite que la glucosa entre en las células del cuerpo, donde se utiliza como fuente de energía. Ésta promueve la absorción de glucosa después de la alimentación, inhibe la producción de glucosa ayudando a evitar que los niveles sean demasiado altos y almacena el exceso en forma de glucógeno en hígado y músculos y en forma de grasa en las células adiposas.
+- **HOMA**: *Índice de resistencia a la insulina*
+*Homeostasis Model Assessment* es un método utilizado para estimar la resistencia a la insulina y la función de las células beta del páncreas. Se basa en la medición de glucosa e insulina en sangre durante el ayuno y sigue la siguiente fórmula descrita por Mattheus [@matthews_homeostasis_1985]:
+$$
+HOMA_{IR} = \frac{(Glucosa * Insulina)}{22.5}
+$$
+- **Leptin** (ng/mL): *Leptina*
+Hormona proteica producida principalmente por el tejido adiposo en el cuerpo humano. Esta hormona juega un papel fundamental en la regulación del peso corporal y el apetito al actuar como una señal de saciedad; cuando los niveles de leptina son altos, se siente menos hambre y el cuerpo tiende a quemar más calorías para mantener el equilibrio energético, por el contrario, cuando los niveles son bajos el cerebro interpreta esto como una situación de "escasez" de energía y se activan mecanismos para aumentar el apetito y reducir el gasto energético.
+- **Adiponectin** (µg/mL): *Adiponectina*
+Según [@palomer_adiponectina_2005] la adiponectina es una citoquina secretada por el tejido adiposo, que regula el metabolismo energético, estimula la oxidación de ácidos grasos, reduce los triglicéridos plasmáticos y mejora el metabolismo de la glucosa mediante aumento de la sensibilidad a la insulina.
+- **Resistin** (ng/mL): *Resistina*
+Acorde a lo descrito por [@wellen_inflammation_2005] la resistina es una hormona polipeptídica responsable de ser la conexión en la bien conocida asociación entre la inflamación y la resistencia a la insulina
+- **MCP-1**(pg/dL): *Proteína quimiotáctica de monocitos 1*
+La proteína quimiotáctica de monocitos 1 pertenece a la familia de quimioquinas C-C, caracterizadas por tener dos residuos de cisteína adyacentes.
+Las quimioquinas son citoquinas con actividad quimioatrayente cuya función, ejercida mediante la unión a receptores con 7 dominios transmembrana acoplados a proteínas G (GPCRs), está relacionada fundamentalmente con el tránsito de células del sistema inmune.
+Las alteraciones en MCP-1 y su receptor se asocian con distintas enfermedades inflamatorias como Artritis reumatoide, según los estudios de [@ogata_role_1997].
+- **Classification**: como etiquetado si el paciente está enfermo (2) o está sano (1)
 
 ```{r, echo=FALSE}
 data = read.csv('dataR2.csv')
@@ -43,17 +70,8 @@ Y posteriormente crearemos un nuevo *DataFrame* con los datos ya normalizados en
 
 ```{r}
 columnas_a_normalizar = c(
-  "Age",
-  "BMI",
-  "Glucose",
-  "Insulin",
-  "HOMA",
-  "Leptin",
-  "Adiponectin",
-  "Resistin",
-  "MCP.1",
-  "Classification"
-)
+  "Age", "BMI", "Glucose", "Insulin", "HOMA", "Leptin", "Adiponectin", "Resistin", "MCP.1",
+  "Classification")
 
 data_normalizada = data
 
@@ -63,55 +81,90 @@ data_normalizada[columnas_a_normalizar] = lapply(data_normalizada[columnas_a_nor
 Ahora tenemos una data normalizada como la siguiente.
 
 ```{r}
-head(data_normalizada)
+head(data_normalizada, n = 3)
 ```
 # 3 Análisis de los datos
 
 ## 3.1 Matriz de covarianza
 
-```{r, echo=FALSE}
-library(ggplot2)
-library(corrplot)
-```
-
-Con los datos ya normalizados, será necesario generar una matriz de covarianza para averiguar qué tan correlacionados se encuentran los datos.
+Con los datos ya normalizados, será necesario generar una matriz de covarianza para averiguar qué tan correlacionados se encuentran los datos. Para esto se aplicará el médoto de correlación de **Pearson**.
 
 ```{r}
-cov_matrix = cor(data_normalizada)
+cov_matrix = cor(data_normalizada, method="pearson")
 ```
 
 Para mejorar la visualización de estos datos, usaremos un gráfico de mapa de calor (*heatmap*).
 
 
 ```{r }
-corrplot(cov_matrix, method = 'number')
+#Segun los datos calculados por método Pearson
+corrplot(cov_matrix, method = 'number', col = viridis::viridis(200), bg = "white", tl.cex = 0.8, tl.col = "black", tl.srt = 45, addCoef.col = "black", is.corr = TRUE)
+# Agregar un título al final del mapa de calor
+mtext("Matriz de correlación - Pearson", side = 2, line = 1, cex = 1.5)
 ```
 
-Si nos enfocamos en la clasificación del paciente, podemos observar que existe cierta correlación con sus parámetros de Glucosa, Insulina, Indice de resistencia a la insulina (HOMA) y Resistina, mientras que existe una leve correlación inversa con la edad y el índice de masa corporal.
+Si nos enfocamos en la clasificación del paciente, podemos observar según los resultados  que existe cierta correlación con sus parámetros de ***Glucosa, Insulina, Indice de resistencia a la insulina (HOMA), Resistina y MCP-1***, también podemos observar que existe una leve correlación inversa con el ***índice de masa corporal, la edad y la adiponectina***, y finalmente no existe relación alguna con la ***leptina***.
 
-## 2.2 Cálculo de autovectores
+## 3.2 Cálculo de autovectores
 
 A continuación calcularemos los autovectores de los datos normalizados.
 
 ```{r}
 eigen_result = eigen(cov_matrix)
-
 # Los autovectores se encuentran en la matriz "vectors" del resultado
 autovectores = eigen_result$vectors
-
 eigen_result$values
-
 ```
 
 
-## 2.3 Selección de componentes principales
+## 3.3 Selección de componentes principales
 
 Ahora, revisemos cuales son los componentes principales de los datos.
 
 ```{r}
+#son 10 columnas, por lo que el cálculo lo realizamos sobre las 9 primeras, excluyendo
+#la columna Classification
 data_normalizada.pca = prcomp(data_normalizada[, 1:9], center=TRUE, scale. = TRUE)
-
 summary(data_normalizada.pca)
 ```
 
 
+Como podemos observar, los primeros 7 componentes explican la mayor parte de la variabilidad
+presente en el conjunto de datos. Podemos ver la transformación lineal a continuación:
+```{r}
+head(data_normalizada.pca$x, n=3)
+```
+Agregando la columna **Classification**
+
+```{r}
+pca_data <- data.frame(data_normalizada.pca$x, Classification=data_normalizada$Classification)
+head(pca_data, n=3)
+```
+
+A continuación trazaremos los componentes principales:
+
+```{r, echo=FALSE}
+#GGpairs usa columna categorica para pintar 
+#Debemos pasar a categorías la columna
+pca_data$Classification <- ifelse(pca_data$Classification == 0, "Sano", "Enfermo")
+my_plot <- ggpairs(pca_data, aes(color = Classification))
+my_plot + theme(text = element_text(size = 10))
+```
+
+Podemos usar **plot_ly** para mostrar un gráfico 3D de los componentes principales:
+
+```{r}
+# Tenemos siete componentes principales PC1, PC2, PC3, PC4, PC5, PC6 y PC7
+# Creamos un dataframe con los siete componentes principales y la columna "Classification" categórica
+pca_data_3d <- data.frame(PC1 = pca_data$PC1, PC2 = pca_data$PC2, PC3 = pca_data$PC3,
+                          PC4 = pca_data$PC4, PC5 = pca_data$PC5, PC6 = pca_data$PC6,
+                          PC7 = pca_data$PC7, Classification = pca_data$Classification)
+
+# Graficar en 3D usando plot_ly
+plot_ly(data = pca_data_3d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Classification, 
+        type = "scatter3d", mode = "markers", marker = list(size = 3))
+```
+
+
+
+## Referencias
